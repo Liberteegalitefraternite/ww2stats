@@ -1,0 +1,119 @@
+---
+title: "Data of casualties from World War 2"
+author: "Leonardo Paez-Goto"
+date: "2024-11-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data source
+
+Data obtained from the [national museum of New Orleans](https://www.nationalww2museum.org/students-teachers/student-resources/research-starters/research-starters-worldwide-deaths-world-war)
+Date obtained: 2024-11-01
+
+The goal of this journal is to show the casualties of participating countries both civilian and military of World War 2
+```{r load library}
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(usethis)
+```
+
+Read excel page and gave it a more convenient name
+```{r read excel page}
+CasualtiesofWW2 <- read_excel("statistic_id1293510_second-world-war_-fatalities-per-country-1939-1945 Original.xlsx", 
+    sheet = "Data", range = "B5:E62")
+```
+First column has no name so I must give it a name
+
+```{r}
+CasualtiesofWW2 <- CasualtiesofWW2 |> 
+  rename(Country = 1)
+
+```
+
+
+Going to give myself a summary of my table of data
+
+```{r}
+summary(CasualtiesofWW2)
+
+
+```
+
+As I was attempting to name line one it was found that rather than numbers being in the table they are characters. Need to fix this.
+
+```{r}
+CasualtiesofWW2 <- CasualtiesofWW2 |>
+  mutate(Military = as.numeric(Military), 
+         Civilian = as.numeric(Civilian),
+         Total = as.numeric(Total))
+
+
+```
+ 
+It returns with a warning as it leaves all previously blank spots with NA. However, the characters have been changed to numbers. As can be seen in the next summary.
+
+```{r}
+summary(CasualtiesofWW2)
+```
+Countries are still in character this needs to be changed to factor
+
+```{r}
+CasualtiesofWW2 <- CasualtiesofWW2 |>
+  mutate(Country = as.factor(Country))
+
+```
+
+Another summary being done to see if country has been changed to factor rather than character
+
+```{r}
+summary(CasualtiesofWW2)
+
+```
+Summary has shown that there is an NA in the country column, need to find what is missing.
+
+```{r}
+CasualtiesofWW2 |> 
+  filter(is.na(Country))
+```
+There is a row that is blank this can be removed
+
+```{r}
+CasualtiesofWW2 <- CasualtiesofWW2 |>
+  drop_na(Country)
+
+  
+```
+Removed the NA within countries going to do another summary to ensure everything is in order
+
+```{r}
+summary(CasualtiesofWW2)
+
+```
+There are NA's still left within military, civilian, and totals. This stems from the fact that many nations who participated were colonies of European powers. The colonies military deaths would be bunched in with the military deaths of the colonizing power. 
+
+Another reason for this is the way some nations tallied up their casualties opting to only put in a total rather than differentiating between civilian and military, an example of this is Cuba and Mexico who had minor roles in World War 2. 
+
+For countries which had both civilian and military casualties filled in but not total, I will now attempt to fill in all the NA's for total that can be filled in with the given data. 
+
+```{r}
+CasualtiesofWW2 <- CasualtiesofWW2 |>
+  mutate(Total = ifelse(is.na(Military) | is.na(Civilian), 
+                        Total,
+                        Military + Civilian))
+
+
+```
+
+Fixed the problem which left nations who only counted total casualties as blank so now for nations which have both military and civilian casualties will be summed together and for nations who only had their total it will be left in. 
+
+I'm happy with the data and how it looks and reads I will now save it not as raw data. 
+
+```{r}
+use_data(CasualtiesofWW2)
+
+```
+
