@@ -113,7 +113,5 @@ Fixed the problem which left nations who only counted total casualties as blank 
 I'm happy with the data and how it looks and reads I will now save it not as raw data. 
 
 ```{r}
-use_data(CasualtiesofWW2)
-
+use_data(CasualtiesofWW2, overwrite = TRUE)
 ```
-
